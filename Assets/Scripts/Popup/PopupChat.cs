@@ -31,21 +31,85 @@ namespace HeroTales
             canvasGroup = GetComponent<CanvasGroup>();
         }
 
-        void Start()
+        private void Start()
         {
             inputField.ActivateInputField();
+        }
+
+        public void OnCloseButtonPressed()
+        {
+            Hide();
+        }
+
+        public void OnSendButtonPressed()
+        {
+            SubmitText();
+        }
+
+        public void OnChatInputFieldEditEnded()
+        {
+            // It seems Unity's InputField OnEndEdit event is called in a lot of contexts
+            // other than submitting the text from an input field (e.g, clicking on a
+            // scrollbar), so make sure we got here only by pressing Enter on an input
+            // field.
+            if (!Input.GetButtonDown("Submit"))
+            {
+                return;
+            }
+
+            SubmitText();
+        }
+
+        public void SubmitText()
+        {
+            var localPlayer = NetworkingUtils.GetHumanLocalPlayer();
+            if (localPlayer != null)
+            {
+                var msg = new SendChatTextMessage();
+                msg.senderNetId = localPlayer.netIdentity;
+                msg.text = inputField.text;
+                if (msg.text.Length > maxChatMessageLength)
+                {
+                    msg.text = msg.text.Substring(0, maxChatMessageLength);
+                }
+
+                NetworkClient.Send<SendChatTextMessage>(msg);
+                inputField.text = string.Empty;
+                inputField.ActivateInputField();
+            }
+        }
+
+        public void SendText(NetworkIdentity senderNetId, string text)
+        {
+            var go = Instantiate(textLinePrefab) as GameObject;
+            go.transform.SetParent(scrollViewContent.transform, false);
+            go.GetComponent<TextMeshProUGUI>().text = text;
+            scrollView.velocity = new Vector2(0.0f, 1000.0f);
+            var localPlayer = NetworkingUtils.GetHumanLocalPlayer();
+            if (senderNetId == localPlayer.netIdentity)
+            {
+                go.GetComponent<TextMeshProUGUI>().color = playerTextColor;
+            }
+            else
+            {
+                go.GetComponent<TextMeshProUGUI>().color = opponentTextColor;
+            }
         }
 
         public void Show()
         {
             isVisible = true;
             canvasGroup.alpha = 1;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
         }
 
         public void Hide()
         {
             isVisible = false;
             canvasGroup.alpha = 0;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
         }
     }
 }
