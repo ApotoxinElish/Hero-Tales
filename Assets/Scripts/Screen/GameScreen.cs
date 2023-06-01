@@ -2,16 +2,21 @@ using Mirror;
 
 namespace HeroTales
 {
+    /// <summary>
+    /// This classes manages the game scene.
+    /// </summary>
     public class GameScreen : BaseScreen
     {
-        // Start is called before the first frame update
-        void Start()
+        protected override void Start()
         {
+            base.Start();
 
         }
 
-        // Update is called once per frame
-        void Update()
+        /// <summary>
+        /// Callback for when the exit game button is pressed.
+        /// </summary>
+        public void OnExitGameButtonPressed()
         {
 
         }

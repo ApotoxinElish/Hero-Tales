@@ -40,6 +40,15 @@ namespace HeroTales
         public void OpenPopup<T>(string name, Action<T> onOpened = null, bool darkenBackground = true) where T : Popup
         {
             var prefab = Resources.Load<GameObject>(name);
+            currentPopup = Instantiate(prefab) as GameObject;
+            currentPopup.transform.SetParent(canvas.transform, false);
+            currentPopup.GetComponent<Popup>().parentScene = this;
+            if (darkenBackground)
+            {
+                panelCanvasGroup.blocksRaycasts = true;
+                panelCanvasGroup.GetComponent<Image>().DOKill();
+                panelCanvasGroup.GetComponent<Image>().DOFade(0.5f, 0.5f);
+            }
 
             if (onOpened != null)
             {
